@@ -34,9 +34,10 @@ steps:
   - cache-rootfs: rootfs
     unless: rootfs_unpacked
 
+  # generic configuration and fixups
   - chroot: rootfs
     shell: |
-      echo afsappliance > /etc/hostname
+      echo openafs > /etc/hostname
       # Allow root logins locally with no password
       sed -i 's,root:[^:]*:,root::,' /etc/shadow
 
@@ -46,6 +47,7 @@ steps:
       allow-hotplug eth0
       iface eth0 inet dhcp
 
+  # openafs configuration
   - create-file: /etc/openafs/afs.conf.client
     contents: |
       AFS_CLIENT=true
@@ -67,20 +69,33 @@ steps:
       +128.2.104.80                    #afsdb-scs-02.srv.cs.cmu.edu
       +128.2.156.64                    #afsdb-scs-03.srv.cs.cmu.edu
        >ece.cmu.edu            #Carnegie Mellon University - Elec. Comp. Eng. Dept.
-
   - chroot: rootfs
     shell: |
       patch /etc/openafs/CellServDB /etc/openafs/CellServDB.patch
 
+  # customizations for our local afs/kerberos realm
   - create-file: /etc/openafs/CellAlias
     contents: |
       andrew.cmu.edu  andrew
       cs.cmu.edu      cs
       ece.cmu.edu     ece
-
   - create-file: /etc/openafs/ThisCell
     contents: |
       cs.cmu.edu
+
+  # samba configuration
+  - create-file: /etc/samba/smb.conf.local
+    contents: |
+      [share]
+        comment = AFS Root Directory Share
+        path = /afs
+        afs share = yes
+        browseable = yes
+        read only = yes
+        guest ok = yes
+  - chroot: rootfs
+    shell: |
+      sed -i -e 's/#\+ Misc #\+/&\n\n   include = \/etc\/samba\/smb.conf.local/' /etc/samba/smb.conf
 
   - fstab: rootfs
   - resize-rootfs: rootfs
