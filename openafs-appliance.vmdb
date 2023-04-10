@@ -1,0 +1,88 @@
+steps:
+  - mkimg: "{{ output }}"
+    size: 4G
+  - mklabel: msdos
+    device: "{{ output }}"
+  - mkpart: primary
+    device: "{{ output }}"
+    start: 0%
+    end: 100%
+    tag: rootfs
+  - kpartx: "{{ output }}"
+  - mkfs: ext4
+    partition: rootfs
+
+  - mount: rootfs
+  - unpack-rootfs: rootfs
+
+  - debootstrap: bullseye
+    mirror: http://deb.debian.org/debian
+    target: rootfs
+    unless: rootfs_unpacked
+  - virtual-filesystems: rootfs
+  - apt: install
+    packages:
+      - grub-pc
+      - linux-image-amd64
+      - openafs-client
+      - parted
+      - patch
+      - samba
+    tag: rootfs
+    unless: rootfs_unpacked
+
+  - cache-rootfs: rootfs
+    unless: rootfs_unpacked
+
+  - chroot: rootfs
+    shell: |
+      echo afsappliance > /etc/hostname
+      # Allow root logins locally with no password
+      sed -i 's,root:[^:]*:,root::,' /etc/shadow
+
+  - create-file: /etc/network/interfaces.d/eth0
+    contents: |
+      auto eth0
+      allow-hotplug eth0
+      iface eth0 inet dhcp
+
+  - create-file: /etc/openafs/afs.conf.client
+    contents: |
+      AFS_CLIENT=true
+      AFS_AFSDB=true
+      AFS_CRYPT=true
+      AFS_DYNROOT=Yes
+      AFS_FAKESTAT=true
+
+  - create-file: /etc/openafs/CellServDB.patch
+    contents: |
+      --- CellServDB.orig 2023-04-09 10:35:20.960000000 -0400
+      +++ CellServDB  2023-04-09 10:40:12.440000000 -0400
+      @@ -225,5 +225,5 @@
+       >cs.cmu.edu             #Carnegie Mellon University - School of Comp. Sci.
+      -128.2.172.58                    #date.srv.cs.cmu.edu
+      -128.2.172.60                    #fig.srv.cs.cmu.edu
+      -128.2.200.97                    #watermelon.srv.cs.cmu.edu
+      +128.2.104.79                    #afsdb-scs-01.srv.cs.cmu.edu
+      +128.2.104.80                    #afsdb-scs-02.srv.cs.cmu.edu
+      +128.2.156.64                    #afsdb-scs-03.srv.cs.cmu.edu
+       >ece.cmu.edu            #Carnegie Mellon University - Elec. Comp. Eng. Dept.
+
+  - chroot: rootfs
+    shell: |
+      patch /etc/openafs/CellServDB /etc/openafs/CellServDB.patch
+
+  - create-file: /etc/openafs/CellAlias
+    contents: |
+      andrew.cmu.edu  andrew
+      cs.cmu.edu      cs
+      ece.cmu.edu     ece
+
+  - create-file: /etc/openafs/ThisCell
+    contents: |
+      cs.cmu.edu
+
+  - fstab: rootfs
+  - resize-rootfs: rootfs
+  - grub: bios
+    tag: rootfs
