@@ -12,20 +12,21 @@ steps:
   - mkfs: ext2
     partition: rootfs
 
+  # mount root filesystem and unpack cached image
   - mount: rootfs
   - unpack-rootfs: rootfs
 
-  - virtual-filesystems: rootfs
-
+  # install Debian-stable (bookworm) + kerberos5/openafs/samba
   - debootstrap: bookworm
     mirror: http://deb.debian.org/debian
     target: rootfs
     unless: rootfs_unpacked
-  #- virtual-filesystems: rootfs
+  - virtual-filesystems: rootfs
   - apt: install
     packages:
       - chrony
       - grub-pc
+      - krb5-user
       - linux-image-amd64
       - openafs-client
       - openafs-krb5
@@ -37,8 +38,11 @@ steps:
     tag: rootfs
     unless: rootfs_unpacked
 
+  # cache image state before customizations
   - cache-rootfs: rootfs
     unless: rootfs_unpacked
+
+  - fstab: rootfs
 
   # generic configuration and fixups
   - chroot: rootfs
@@ -47,11 +51,30 @@ steps:
       # Allow root logins locally with no password
       sed -i 's,root:[^:]*:,root::,' /etc/shadow
 
+  # networking
   - create-file: /etc/network/interfaces.d/eth0
     contents: |
       auto eth0
       allow-hotplug eth0
       iface eth0 inet dhcp
+
+  # kerberos configuration
+  - create-file: /etc/krb5.conf.patch
+    contents: |
+      --- krb5.conf.orig	2023-08-22 13:07:11.016602662 -0400
+      +++ krb5.conf	2023-08-22 13:08:04.161730311 -0400
+      @@ -1,3 +1,3 @@
+       [libdefaults]
+      -	default_realm = ATHENA.MIT.EDU
+      +	default_realm = CS.CMU.EDU
+       
+      @@ -83,2 +83,3 @@
+               .utoronto.ca = UTORONTO.CA
+      +	.cs.cmu.edu = CS.CMU.EDU
+       
+  - chroot: rootfs
+    shell: |
+      patch /etc/krb5.conf /etc/krb5.conf.patch
 
   # openafs configuration
   - create-file: /etc/openafs/afs.conf.client
@@ -79,7 +102,7 @@ steps:
     shell: |
       patch /etc/openafs/CellServDB /etc/openafs/CellServDB.patch
 
-  # customizations for our local afs/kerberos realm
+  # customizations for local afs/kerberos realm
   - create-file: /etc/openafs/CellAlias
     contents: |
       andrew.cmu.edu  andrew
@@ -87,12 +110,12 @@ steps:
       ece.cmu.edu     ece
   - create-file: /etc/openafs/ThisCell
     contents: |
-      cs.cmu.edu
+      andrew.cmu.edu
 
   # samba configuration
   - create-file: /etc/samba/smb.conf.local
     contents: |
-      [share]
+      [afs]
         comment = AFS Root Directory Share
         path = /afs
         afs share = yes
@@ -103,7 +126,6 @@ steps:
     shell: |
       sed -i -e 's/#\+ Misc #\+/&\n\n   include = \/etc\/samba\/smb.conf.local/' /etc/samba/smb.conf
 
-  - fstab: rootfs
   - resize-rootfs: rootfs
   - grub: bios
     tag: rootfs
