@@ -1,4 +1,7 @@
-openafs-appliance.img
-openafs-appliance.qcow2
-openafs-appliance.tgz
-openafs-appliance.vmdk
+/openafs-appliance.img
+/openafs-appliance.log
+/openafs-appliance.qcow2
+/openafs-appliance.tgz
+/openafs-appliance.vmdk
+
+/vmdb2/
