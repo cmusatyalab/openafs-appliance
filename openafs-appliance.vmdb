@@ -125,7 +125,7 @@ steps:
         guest ok = yes
   - chroot: rootfs
     shell: |
-      sed -i -e 's/#\+ Misc #\+/&\n\n   include = \/etc\/samba\/smb.conf.local/' /etc/samba/smb.conf
+      sed -i -e 's/#=\+ Share Definitions =\+/&\n\n   include = \/etc\/samba\/smb.conf.local/' /etc/samba/smb.conf
 
   - resize-rootfs: rootfs
   - grub: bios
