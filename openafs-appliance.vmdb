@@ -24,6 +24,7 @@ steps:
   - virtual-filesystems: rootfs
   - apt: install
     packages:
+      - avahi-utils
       - chrony
       - grub-pc
       - krb5-user
