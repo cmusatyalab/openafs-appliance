@@ -28,7 +28,9 @@ steps:
       - chrony
       - grub-pc
       - krb5-user
+      - libpam-krb5
       - linux-image-amd64
+      - man
       - openafs-client
       - openafs-krb5
       - parted
