@@ -28,16 +28,20 @@ steps:
       - chrony
       - grub-pc
       - krb5-user
-      - libpam-krb5
       - linux-image-amd64
-      - man
-      - openafs-client
-      - openafs-krb5
       - parted
       - patch
+      # openafs
+      - openafs-client
+      - openafs-krb5
+      # samba
       - realmd
       - samba
       - winbind
+      # openssh for priming krb5 credentials cache
+      - libpam-krb5
+      - openssh-server
+      - man
     tag: rootfs
     unless: rootfs_unpacked
 
@@ -66,17 +70,13 @@ steps:
     contents: |
       --- krb5.conf.orig	2023-08-22 13:07:11.016602662 -0400
       +++ krb5.conf	2023-08-22 13:08:04.161730311 -0400
-      @@ -1,3 +1,3 @@
-       [libdefaults]
-      -	default_realm = ATHENA.MIT.EDU
-      +	default_realm = CS.CMU.EDU
-       
       @@ -83,2 +83,3 @@
                .utoronto.ca = UTORONTO.CA
       +	.cs.cmu.edu = CS.CMU.EDU
        
   - chroot: rootfs
     shell: |
+      sed -i -e 's/\(default_realm.*=\).*$/\1 ANDREW.CMU.EDU/' /etc/krb5.conf
       patch /etc/krb5.conf /etc/krb5.conf.patch
 
   # openafs configuration
@@ -118,16 +118,32 @@ steps:
   # samba configuration
   - create-file: /etc/samba/smb.conf.local
     contents: |
+      add user script = /usr/sbin/useradd -s /usr/sbin/nologin -m '%u'
+      preexec = /usr/bin/aklog -c andrew.cmu.edu
+      preexec close = no
       [afs]
         comment = AFS Root Directory Share
         path = /afs
         afs share = yes
         browseable = yes
-        read only = yes
+        read only = no
         guest ok = yes
   - chroot: rootfs
     shell: |
       sed -i -e 's/#=\+ Share Definitions =\+/&\n\n   include = \/etc\/samba\/smb.conf.local/' /etc/samba/smb.conf
+
+  # openssh / pam_krb5 configuration
+  - create-file: /etc/skel/.hushlogin
+    contents: ""
+  - chroot: rootfs
+    shell: |
+      cat << EOF >> /etc/krb5.conf
+      [appdefaults]
+          ccache = FILE:/tmp/krb5cc_%u
+          retain_after_close = true
+          no_update_user = true
+          expose_account = true
+      EOF
 
   - resize-rootfs: rootfs
   - grub: bios
