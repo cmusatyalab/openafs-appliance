@@ -1,0 +1,16 @@
+[tool.poetry]
+name = "webauth"
+version = "0.1.0"
+description = ""
+authors = ["Jan Harkes <jaharkes@cs.cmu.edu>"]
+readme = "README.md"
+packages = [{include = "webauth", from = "src"}]
+
+[tool.poetry.dependencies]
+python = "^3.8"
+flask = "^2.3.3"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
