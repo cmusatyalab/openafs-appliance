@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8">
-    <title>OpenAFS Appliance</title>
+    <title>OpenAFS Appliance Login</title>
     <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
     <link rel="stylesheet" href="https://code.getmdl.io/1.3.0/material.blue_grey-red.min.css">
     <script defer src="https://code.getmdl.io/1.3.0/material.min.js"></script>
@@ -11,15 +11,15 @@
     <div class="mdl-layout mdl-js-layout mdl-layout--fixed-header">
       <header class="mdl-layout__header">
         <div class="mdl-layout__header-row">
-          <span class="mdl-layout-title">OpenAFS Appliance</span>
+          <span class="mdl-layout-title">OpenAFS Appliance Login</span>
         </div>
       </header>
       <main class="mdl-layout__content" style="display: flex; align-items: center; justify-content: center">
-          <div class="mdl-card mdl-shadow--2dp">
+          <div class="mdl-card mdl-shadow--3dp">
 
             <form name="loginForm" action="#" method="post">
                 <div class="mdl-card__title">
-                  <h2 class="mdl-card__title-text">AFS Cell Login<br>andrew.cmu.edu</h2>
+                  <h2 class="mdl-card__title-text">OpenAFS Login<br>Cell andrew.cmu.edu</h2>
                 </div>
                 <div class="mdl-card__supporting-text mdl-card--border">
                   <div class="mdl-textfield mdl-js-textfield">
@@ -32,12 +32,15 @@
                   </div>
                 </div>
                 <div class="mdl-card__actions mdl-card--border">
-                  <input class="mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect" type="submit" value="Login"></input>
+                  <input class="mdl-button mdl-button--raised mdl-button--colored mdl-js-button mdl-js-ripple-effect" type="submit" value="Login"></input>
                 </div>
             </form>
 
           </div>
       </main>
+      <div class="mdi-snackbar mdi-js-snackbar">
+        <div class="mdi-snackbar__text">Test Message{{ error }}</div>
+      </div>
       <footer class="mdl-mini-footer">
         <div class="mdl-mini-footer__left-section">
           <ul class="mdl-mini-footer__link-list">
