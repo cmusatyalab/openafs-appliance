@@ -1,56 +1,56 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="utf-8">
-    <title>OpenAFS Appliance Login</title>
-    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
-    <link rel="stylesheet" href="https://code.getmdl.io/1.3.0/material.blue_grey-red.min.css">
-    <script defer src="https://code.getmdl.io/1.3.0/material.min.js"></script>
-  </head>
-  <body>
-    <div class="mdl-layout mdl-js-layout mdl-layout--fixed-header">
-      <header class="mdl-layout__header">
-        <div class="mdl-layout__header-row">
-          <span class="mdl-layout-title">OpenAFS Appliance Login</span>
-        </div>
-      </header>
-      <main class="mdl-layout__content" style="display: flex; align-items: center; justify-content: center">
-          <div class="mdl-card mdl-shadow--3dp">
-
-            <form name="loginForm" action="#" method="post">
-                <div class="mdl-card__title">
-                  <h2 class="mdl-card__title-text">OpenAFS Login<br>Cell andrew.cmu.edu</h2>
-                </div>
-                <div class="mdl-card__supporting-text mdl-card--border">
-                  <div class="mdl-textfield mdl-js-textfield">
-                    <input class="mdl-textfield__input" type="text" id="username">
-                    <label class="mdl-textfield__label" for="username">Username</label>
-                  </div>
-                  <div class="mdl-textfield mdl-js-textfield">
-                    <input class="mdl-textfield__input" type="password" id="password">
-                    <label class="mdl-textfield__label" for="password">Password</label>
-                  </div>
-                </div>
-                <div class="mdl-card__actions mdl-card--border">
-                  <input class="mdl-button mdl-button--raised mdl-button--colored mdl-js-button mdl-js-ripple-effect" type="submit" value="Login"></input>
-                </div>
-            </form>
-
-          </div>
-      </main>
-      <div class="mdi-snackbar mdi-js-snackbar">
-        <div class="mdi-snackbar__text">Test Message{{ error }}</div>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OpenAFS Appliance Login</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+  <link rel="stylesheet" href="https://code.getmdl.io/1.3.0/material.blue_grey-red.min.css">
+  <script defer src="https://code.getmdl.io/1.3.0/material.min.js"></script>
+</head>
+<body>
+  <div class="mdl-layout mdl-js-layout mdl-layout--fixed-header">
+    <header class="mdl-layout__header">
+      <div class="mdl-layout__header-row">
+        <span class="mdl-layout-title">OpenAFS Appliance Login</span>
       </div>
-      <footer class="mdl-mini-footer">
-        <div class="mdl-mini-footer__left-section">
-          <ul class="mdl-mini-footer__link-list">
-            <li><a href="#">About</a></li>
-            <li><a href="#">Help</a></li>
-            <li><a href="#">Privacy & Terms</a></li>
-          </ul>
-        </div> 
-      </footer>
-    </div>
-  </body>
+    </header>
+    <main class="mdl-layout__content" style="display: flex; align-items: center; justify-content: center">
+      <div class="mdl-card mdl-shadow--3dp">
+        <form name="loginForm" method="post">
+            <div class="mdl-card__title">
+              <h2 class="mdl-card__title-text">OpenAFS Login<br>Cell andrew.cmu.edu</h2>
+            </div>
+            <div class="mdl-card__supporting-text mdl-card--border">
+              <div class="mdl-textfield mdl-js-textfield">
+                <input class="mdl-textfield__input" type="text" name="username" id="username" required>
+                <label class="mdl-textfield__label" for="username">Username</label>
+              </div>
+              <div class="mdl-textfield mdl-js-textfield">
+                <input class="mdl-textfield__input" type="password" name="password" id="password" required>
+                <label class="mdl-textfield__label" for="password">Password</label>
+              </div>
+            </div>
+            <div class="mdl-card__actions mdl-card--border">
+              <input class="mdl-button mdl-button--raised mdl-button--colored mdl-js-button mdl-js-ripple-effect" type="submit" value="Login"/>
+            </div>
+        </form>
+      </div>
+      <div aria-live="assertive" aria-atomic="true" aria-relevant="text" class="mdl-snackbar mdl-js-snackbar">
+        <div class="mdl-snackbar__text"></div>
+        <button class="mdl-snackbar__action" type="button"></button>
+      </div>
+    </main>
+  </div>
+</body>
+<script>
+window.onload = () => {
+  var message = '{{ error }}';
+  if (message.length > 0) {
+      var notification = document.querySelector('.mdl-js-snackbar');
+      notification.MaterialSnackbar.showSnackbar({message: message, timeout: 10000});
+  }
+}
+</script>
 </html>
 
