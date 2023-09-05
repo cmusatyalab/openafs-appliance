@@ -30,8 +30,8 @@ def check_credentials(username: str, password: str, ccache: str) -> bool:
     # Check that the username is not in the block list
     #
     # not _really_ necessary for root since we won't override the smbpasswd
-    # for already existing local users, but this avoids an unnuecessary
-    # step where we check password validity with kerberos.
+    # for already existing local users, but this avoids an unnecessary step
+    # where we check password validity with kerberos.
     if username in USER_BLOCKLIST:
         return False
 
