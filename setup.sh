@@ -15,4 +15,4 @@ sudo apt install -y \
 
 [ -e openafs-appliance.crt ] || openssl req -x509 -newkey rsa:4096 -keyout openafs-appliance.key -out openafs-appliance.crt -sha256 -days 3650 -nodes -subj "/C=US/ST=Pennsylvania/L=Pittsburgh/O=CMU/OU=SCS-CSD/CN=openafs.local"
 
-[ -e mdl.zip ] || wget https://code.getmdl.io/1.3.0/mdl.zip
+#[ -e mdl.zip ] || wget https://code.getmdl.io/1.3.0/mdl.zip

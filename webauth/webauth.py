@@ -63,7 +63,12 @@ def get_or_create_user(username: str, password: str) -> pwd.struct_passwd:
 
     # not already a local_user, use smbpasswd to create a local user
     try:
-        subprocess.run([SMBPASSWD, "-a", username], input=f"{password}\n", check=True)
+        subprocess.run(
+            [SMBPASSWD, "-a", username],
+            input=f"{password}\n{password}\n",
+            encoding="utf-8",
+            check=True,
+        )
     except subprocess.CalledProcessError:
         raise RuntimeError(f"Failed to add local user {username}")
 
