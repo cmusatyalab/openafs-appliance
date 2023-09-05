@@ -42,6 +42,10 @@ steps:
       - libpam-krb5
       - openssh-server
       - man
+      # flask and gunicorn for webauth
+      - gunicorn
+      - pipx
+      - python3-flask
     tag: rootfs
     unless: rootfs_unpacked
 
@@ -144,6 +148,13 @@ steps:
           no_update_user = true
           expose_account = true
       EOF
+
+  # webauth
+  - copy-file: /app/webauth-0.1.0-py3-none-any.whl
+    src: webauth/dist/webauth-0.1.0-py3-none-any.whl
+  - chroot: rootfs
+    shell: |
+      pipx install /app/webauth-0.1.0-py3-none-any.whl
 
   - resize-rootfs: rootfs
   - grub: bios
