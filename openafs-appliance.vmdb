@@ -36,9 +36,7 @@ steps:
       - openafs-client
       - openafs-krb5
       # samba
-      - realmd
       - samba
-      - winbind
       # webauth
       - gunicorn
       - python3-flask
