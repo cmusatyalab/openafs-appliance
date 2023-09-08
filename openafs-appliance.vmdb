@@ -38,10 +38,6 @@ steps:
       - realmd
       - samba
       - winbind
-      # openssh for priming krb5 credentials cache
-      - libpam-krb5
-      - openssh-server
-      - man
       # webauth
       - gunicorn
       - python3-flask
@@ -137,19 +133,6 @@ steps:
   - chroot: rootfs
     shell: |
       sed -i -e 's/#=\+ Share Definitions =\+/&\n\n   include = \/etc\/samba\/smb.conf.local/' /etc/samba/smb.conf
-
-  # openssh / pam_krb5 configuration
-  - create-file: /etc/skel/.hushlogin
-    contents: ""
-  - chroot: rootfs
-    shell: |
-      cat << EOF >> /etc/krb5.conf
-      [appdefaults]
-          ccache = FILE:/tmp/krb5cc_%u
-          retain_after_close = true
-          no_update_user = true
-          expose_account = true
-      EOF
 
   # webauth
   - copy-dir: /app
