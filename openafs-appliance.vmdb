@@ -117,6 +117,8 @@ steps:
   - create-file: /etc/openafs/ThisCell
     contents: |
       andrew.cmu.edu
+  - create-file: /etc/openafs/cacheinfo
+    contents: /afs:/var/cache/openafs:1000000
 
   # samba configuration
   - create-file: /etc/samba/smb.conf.local
@@ -128,6 +130,7 @@ steps:
         comment = AFS Root Directory Share
         path = /afs
         afs share = yes
+        vfs objects = fake_perms
         browseable = yes
         read only = no
         guest ok = yes
