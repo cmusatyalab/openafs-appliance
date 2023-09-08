@@ -29,6 +29,7 @@ steps:
       - grub-pc
       - krb5-user
       - linux-image-amd64
+      - net-tools
       - parted
       - patch
       # openafs
