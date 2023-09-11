@@ -1,0 +1,39 @@
+Description: Don't clobber symlinks with fake_perms
+ fake_perms turned any non-directory file system object into a file
+ which broke symlink traversal.
+Author: Jan Harkes <jaharkes@cs.cmu.edu>
+
+---
+The information above should follow the Patch Tagging Guidelines, please
+checkout https://dep.debian.net/deps/dep3/ to learn about the format. Here
+are templates for supplementary fields that you might want to add:
+
+Origin: (upstream|backport|vendor|other), (<patch-url>|commit:<commit-id>)
+Bug: <upstream-bugtracker-url>
+Bug-Debian: https://bugs.debian.org/<bugnumber>
+Bug-Ubuntu: https://launchpad.net/bugs/<bugnumber>
+Forwarded: (no|not-needed|<patch-forwarded-url>)
+Applied-Upstream: <version>, (<commit-url>|commit:<commid-id>)
+Reviewed-By: <name and email of someone who approved/reviewed the patch>
+Last-Update: 2023-09-08
+
+--- samba-4.17.9+dfsg.orig/source3/modules/vfs_fake_perms.c
++++ samba-4.17.9+dfsg/source3/modules/vfs_fake_perms.c
+@@ -41,7 +41,7 @@ static int fake_perms_stat(vfs_handle_st
+ 
+ 	if (S_ISDIR(smb_fname->st.st_ex_mode)) {
+ 		smb_fname->st.st_ex_mode = S_IFDIR | S_IRWXU;
+-	} else {
++	} else if (S_ISFILE(smb_fname->st.st_ex_mode)) {
+ 		smb_fname->st.st_ex_mode = S_IRWXU;
+ 	}
+ 
+@@ -74,7 +74,7 @@ static int fake_perms_fstat(vfs_handle_s
+ 
+ 	if (S_ISDIR(sbuf->st_ex_mode)) {
+ 		sbuf->st_ex_mode = S_IFDIR | S_IRWXU;
+-	} else {
++	} else if (S_ISFILE(sbuf->st_ex_mode)) {
+ 		sbuf->st_ex_mode = S_IRWXU;
+ 	}
+ 	if (handle->conn->session_info != NULL) {

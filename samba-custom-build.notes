@@ -1,0 +1,26 @@
+- add to /etc/apt/sources.list
+    deb-src http://deb.debian.org/debian bookworm main
+
+- apt update
+- apt install devscripts (pbuilder?)
+- apt-get build-dep samba
+- apt-get source samba
+
+- patch samba source
+    QUILT_PATCHES=debian/patches QUILT_REFRESH_ARGS="-p ab --no-timestamps --no-index" quilt import fake_perms_symlink.patch
+
+- update debian changelog
+    DEBEMAIL="Jan Harkes <jaharkes@cs.cmu.edu>" dch -n "Fix vfs_fake_perms to only change mode bits of directory and file objects."
+
+- debuild -uc -us
+
+- need to install resulting
+    libldb2_*.deb
+    python3-ldb_*.deb
+    python3-samba_*.deb
+    samba_*.deb
+    samba-common_*.deb
+    samba-common-bin_*.deb
+    samba-dsdb-modules_*.deb
+    samba-libs_*.deb
+    samba-vfs-modules_*.deb

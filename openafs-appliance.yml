@@ -1,0 +1,194 @@
+#
+# Ansible playbook to configure an openafs appliance.
+#
+
+- hosts: image
+  vars:
+    debug_image: false  # set this to true to allow passwordless root login
+    hostname: openafs
+    kerberos:
+      realm: ANDREW.CMU.EDU
+    openafs:
+      cell: andrew.cmu.edu
+    iface:
+      name: eth0
+
+  tasks:
+
+  #####################################
+  - name: ensure required software packages are installed
+    ansible.builtin.apt:
+      pkg:
+      - avahi-utils
+      - chrony
+      - krb5-user
+      # openafs
+      - openafs-client
+      - openafs-krb5
+      # samba
+      - samba
+      # webauth
+      - gunicorn
+      - python3-flask
+
+  #####################################
+  - name: configure system hostname/networking
+    tags: config
+    block:
+    - name: set hostname
+      ansible.builtin.copy:
+        content: "{{ hostname }}"
+        dest: /etc/hostname
+
+    - name: unset root password
+      ansible.builtin.replace:
+        path: /etc/shadow
+        regexp: '^root:[^:]*:(.*)$'
+        replace: 'root::\1'
+      when: debug_image | bool
+
+    - name: configure networking
+      ansible.builtin.copy:
+        content: |
+          auto {{ iface.name }}
+          allow-hotplug {{ iface.name }}
+          iface {{ iface.name }} inet dhcp
+        dest: /etc/network/interfaces.d/wired
+
+  #####################################
+  - name: configure Kerberos
+    tags: config
+    block:
+    - name: add CS.CMU.EDU realm mapping to krb5.config
+      ansible.builtin.lineinfile: 
+        path: /etc/krb5.conf
+        regexp: '^\s*\.cs\.cmu\.edu = CS\.CMU\.EDU$'
+        line: "        .cs.cmu.edu = CS.CMU.EDU"
+
+    - name: set default kerberos realm
+      ansible.builtin.replace:
+        path: /etc/krb5.conf
+        regexp: '^(.*default_realm[^=]*=).*$'
+        replace: '\1 {{ kerberos.realm }}'
+
+  #####################################
+  - name: configure OpenAFS
+    tags: config
+    block:
+    - name: add /afs/{andrew,cs,ece} cell shortcuts
+      ansible.builtin.copy:
+        content: |
+          andrew.cmu.edu  andrew
+          cs.cmu.edu      cs
+          ece.cmu.edu     ece
+        dest: /etc/openafs/CellAlias
+      when: openafs.cell == "andrew.cmu.edu"
+
+    - name: fix openafs CellServDB
+      ansible.builtin.replace:
+        regexp: '^(>cs\.cmu\.edu.*)\n([^>]*)'
+        replace: |
+          \1
+          128.2.104.79                    #afsdb-scs-01.srv.cs.cmu.edu
+          128.2.104.80                    #afsdb-scs-02.srv.cs.cmu.edu
+          128.2.156.64                    #afsdb-scs-03.srv.cs.cmu.edu
+        path: /etc/openafs/CellServDB
+
+    - name: set local AFS cell
+      ansible.builtin.copy:
+        content: "{{ openafs.cell }}"
+        dest: /etc/openafs/ThisCell
+
+    - name: configure openafs client
+      ansible.builtin.copy:
+        content: |
+          AFS_CLIENT=true
+          AFS_AFSDB=true
+          AFS_CRYPT=true
+          AFS_DYNROOT=Yes
+          AFS_FAKESTAT=true
+        dest: /etc/openafs/afs.conf.client
+
+    - name: increase openafs local cache size
+      ansible.builtin.copy:
+        content: "/afs:/var/cache/openafs:1000000"
+        dest: /etc/openafs/cacheinfo
+
+  #####################################
+  - name: configure Samba
+    tags: config
+    block:
+    # (only useful before installing package?)
+    #- name: set workgroup name (debconf)
+    #  ansible.builtin.debconf:
+    #    name: samba-common
+    #    question: samba-common/workgroup
+    #    value: OPENAFS
+    #    vtype: string
+
+    - name: copy custom Samba built (with vfs_fake_perms fix for symlinks)
+      ansible.builtin.unarchive:
+        src: samba-rebuild.tgz          # http://coda.cs.cmu.edu/~jaharkes/samba-rebuild.tgz
+        dest: /root/samba-rebuild
+
+    - name: install custom built samba packages
+      ansible.builtin.ZZ
+
+    - name: set workgroup name (OPENAFS/CLOUDLET?)
+      ansible.builtin.lineinfile:
+        path: /etc/samba/smb.conf
+        regexp: '^.*workgroup = .*$'
+        line: "   workgroup = OPENAFS"
+        insertafter: '^\[global\]$'
+
+    - name: add local samba configuration
+      ansible.builtin.copy:
+        content: |
+          add user script = /usr/sbin/useradd -s /usr/sbin/nologin -m '%u'
+          preexec = /usr/bin/aklog -c {{ openafs.cell }}
+          preexec close = no
+          [afs]
+            comment = AFS Root Directory Share
+            path = /afs
+            afs share = yes
+            vfs objects = fake_perms
+            browseable = yes
+            read only = no
+            guest ok = yes
+        dest: /etc/samba/smb.conf.local
+
+    - name: ensure local samba configuration is included
+      ansible.builtin.lineinfile:
+        path: /etc/samba/smb.conf
+        regexp: '^.*include = /etc/samba/smb.conf.local$'
+        line: "   include = /etc/samba/smb.conf.local\n"
+        insertbefore: '^#=+ Share Definitions =+$'
+
+  #####################################
+  - name: configure WebAuth application
+    tags: config
+    block:
+    - name: copy webauth source to /app
+      ansible.builtin.copy:
+        src: webauth/
+        dest: /app/
+
+    - name: create systemd file for webauth
+      ansible.builtin.copy:
+        content: |
+          [Unit]
+          Description=Web-based authentication application
+          After=network.target
+          [Service]
+          User=root
+          WorkingDirectory=/app
+          ExecStart=/usr/bin/gunicorn -b 0.0.0.0:80 -w 4 webauth:app
+          Restart=always
+          [Install]
+          WantedBy=multi-user.target
+        dest: /etc/systemd/system/webauth.service
+
+    - name: enable webauth service
+      command:
+        cmd: /bin/systemctl enable webauth.service
+        creates: /etc/systemd/system/multi-user.target.wants/webauth.service
