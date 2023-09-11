@@ -14,7 +14,7 @@
 
 - debuild -uc -us
 
-- need to install resulting
+- need to install at least
     libldb2_*.deb
     python3-ldb_*.deb
     python3-samba_*.deb
@@ -24,3 +24,6 @@
     samba-dsdb-modules_*.deb
     samba-libs_*.deb
     samba-vfs-modules_*.deb
+
+- Turn a directory of built debs into a minimal repo with
+    dpkg-scanpackages . | gzip > Packages.gz

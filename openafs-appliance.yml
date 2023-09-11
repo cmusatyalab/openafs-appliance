@@ -12,9 +12,10 @@
       cell: andrew.cmu.edu
     iface:
       name: eth0
+    samba_rebuild:
+      root: "http://coda.cs.cmu.edu/~jaharkes/samba-rebuild"
 
   tasks:
-
   #####################################
   - name: ensure required software packages are installed
     ansible.builtin.apt:
@@ -118,21 +119,14 @@
   - name: configure Samba
     tags: config
     block:
-    # (only useful before installing package?)
-    #- name: set workgroup name (debconf)
-    #  ansible.builtin.debconf:
-    #    name: samba-common
-    #    question: samba-common/workgroup
-    #    value: OPENAFS
-    #    vtype: string
-
-    - name: copy custom Samba built (with vfs_fake_perms fix for symlinks)
-      ansible.builtin.unarchive:
-        src: samba-rebuild.tgz          # http://coda.cs.cmu.edu/~jaharkes/samba-rebuild.tgz
-        dest: /root/samba-rebuild
+    - name: add repo for custom built samba packages
+      ansible.builtin.apt_repository:
+        repo: "deb [allow-insecure=yes trusted=yes] {{ samba_rebuild.root }} ./"
 
     - name: install custom built samba packages
-      ansible.builtin.ZZ
+      ansible.builtin.apt:
+        pkg: samba
+        state: latest
 
     - name: set workgroup name (OPENAFS/CLOUDLET?)
       ansible.builtin.lineinfile:
