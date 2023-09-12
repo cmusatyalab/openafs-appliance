@@ -68,6 +68,9 @@ steps:
         realm: ANDREW.CMU.EDU
       openafs:
         cell: andrew.cmu.edu
+      coda:
+        enabled: true
+        realm: coda.cs.cmu.edu
 
   - resize-rootfs: rootfs
   - grub: bios

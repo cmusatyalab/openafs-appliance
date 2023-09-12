@@ -16,6 +16,9 @@
       workgroup: "OPENAFS"      # maybe set to CLOUDLET?
     samba_rebuild:
       root: "http://coda.cs.cmu.edu/~jaharkes/samba-rebuild"
+    coda:
+      enabled: false
+      realm: testserver.coda.cs.cmu.edu
 
   tasks:
   #####################################
@@ -113,6 +116,36 @@
       when: openafs.cell == "andrew.cmu.edu"
 
   #####################################
+  - name: add/configure Coda client
+    when: coda.enabled | bool
+    tags: config
+    block:
+    - name: fetch Coda repository signing key
+      ansible.builtin.get_url:
+        url: http://coda.cs.cmu.edu/coda/jaharkes.key
+        dest: /etc/apt/keyrings/coda.asc
+        checksum: "sha256:045cba6000a9c9e86a52e68e6717c9a6d2ca03bd20d240b6b4393c37d03b55c8"
+
+    - name: add repo for Coda packages
+      ansible.builtin.apt_repository:
+        repo: "deb [signed-by=/etc/apt/keyrings/coda.asc] http://coda.cs.cmu.edu/coda bookworm main"
+
+    - name: install Coda
+      ansible.builtin.apt:
+        pkg: coda-client
+
+    - name: configure Coda
+      ansible.builtin.lineinfile:
+        path: /etc/coda/venus.conf
+        regexp: '^#?{{ item.key }}=.*$'
+        line: '{{ item.key }}={{ item.val }}'
+      loop:
+      - { key: "realm", val: '"{{ coda.realm }}"' }
+      - { key: "cachesize", val: '500M' }
+      - { key: "wholefilemaxsize", val: '200M' }
+      - { key: "wholefileminsize", val: '200M' }
+
+  #####################################
   - name: configure Samba
     tags: config
     block:
@@ -155,6 +188,18 @@
             guest ok = no
         path: /etc/samba/smb.conf
 
+    - name: configure Samba | add Coda share
+      when: coda.enabled | bool
+      ansible.builtin.blockinfile:
+        marker: "# {mark} CODA SHARE"
+        block: |
+          [coda]
+            comment = Coda Root Directory Share
+            path = /coda
+            vfs objects = fake_perms
+            browseable = yes
+            read only = no
+            guest ok = no
         path: /etc/samba/smb.conf
 
   #####################################
