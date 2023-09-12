@@ -12,6 +12,8 @@
       cell: andrew.cmu.edu
     iface:
       name: eth0
+    samba:
+      workgroup: "OPENAFS"      # maybe set to CLOUDLET?
     samba_rebuild:
       root: "http://coda.cs.cmu.edu/~jaharkes/samba-rebuild"
 
@@ -119,28 +121,35 @@
   - name: configure Samba
     tags: config
     block:
-    - name: add repo for custom built samba packages
+    - name: add repo for custom-built Samba packages
       ansible.builtin.apt_repository:
         repo: "deb [allow-insecure=yes trusted=yes] {{ samba_rebuild.root }} ./"
 
-    - name: install custom built samba packages
+    - name: install custom-built Samba packages
       ansible.builtin.apt:
         pkg: samba
         state: latest
 
-    - name: set workgroup name (OPENAFS/CLOUDLET?)
+    - name: configure Samba | set workgroup name
       ansible.builtin.lineinfile:
         path: /etc/samba/smb.conf
         regexp: '^.*workgroup = .*$'
-        line: "   workgroup = OPENAFS"
+        line: "   workgroup = {{ samba.workgroup }}"
         insertafter: '^\[global\]$'
 
-    - name: add local samba configuration
-      ansible.builtin.copy:
-        content: |
+    - name: configure Samba | add user and preexec scripts
+      ansible.builtin.blockinfile:
+        path: /etc/samba/smb.conf
+        block: |
           add user script = /usr/sbin/useradd -s /usr/sbin/nologin -m '%u'
           preexec = /usr/bin/aklog -c {{ openafs.cell }}
           preexec close = no
+        insertbefore: '^#=+ Share Definitions =+$'
+
+    - name: configure Samba | add AFS share
+      ansible.builtin.blockinfile:
+        marker: "# {mark} OPENAFS SHARE"
+        block: |
           [afs]
             comment = AFS Root Directory Share
             path = /afs
@@ -148,15 +157,10 @@
             vfs objects = fake_perms
             browseable = yes
             read only = no
-            guest ok = yes
-        dest: /etc/samba/smb.conf.local
-
-    - name: ensure local samba configuration is included
-      ansible.builtin.lineinfile:
+            guest ok = no
         path: /etc/samba/smb.conf
-        regexp: '^.*include = /etc/samba/smb.conf.local$'
-        line: "   include = /etc/samba/smb.conf.local\n"
-        insertbefore: '^#=+ Share Definitions =+$'
+
+        path: /etc/samba/smb.conf
 
   #####################################
   - name: configure WebAuth application
