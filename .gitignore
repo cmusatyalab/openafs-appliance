@@ -6,5 +6,7 @@
 /openafs-appliance.tgz
 /openafs-appliance.vmdk
 
+/CellServDB
+
 /samba/
 /vmdb2/

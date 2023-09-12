@@ -78,31 +78,7 @@
   - name: configure OpenAFS
     tags: config
     block:
-    - name: add /afs/{andrew,cs,ece} cell shortcuts
-      ansible.builtin.copy:
-        content: |
-          andrew.cmu.edu  andrew
-          cs.cmu.edu      cs
-          ece.cmu.edu     ece
-        dest: /etc/openafs/CellAlias
-      when: openafs.cell == "andrew.cmu.edu"
-
-    - name: fix openafs CellServDB
-      ansible.builtin.replace:
-        regexp: '^(>cs\.cmu\.edu.*)\n([^>]*)'
-        replace: |
-          \1
-          128.2.104.79                    #afsdb-scs-01.srv.cs.cmu.edu
-          128.2.104.80                    #afsdb-scs-02.srv.cs.cmu.edu
-          128.2.156.64                    #afsdb-scs-03.srv.cs.cmu.edu
-        path: /etc/openafs/CellServDB
-
-    - name: set local AFS cell
-      ansible.builtin.copy:
-        content: "{{ openafs.cell }}"
-        dest: /etc/openafs/ThisCell
-
-    - name: configure openafs client
+    - name: configure OpenAFS | client
       ansible.builtin.copy:
         content: |
           AFS_CLIENT=true
@@ -112,10 +88,29 @@
           AFS_FAKESTAT=true
         dest: /etc/openafs/afs.conf.client
 
-    - name: increase openafs local cache size
+    - name: configure OpenAFS | increase cache size
       ansible.builtin.copy:
         content: "/afs:/var/cache/openafs:1000000"
         dest: /etc/openafs/cacheinfo
+
+    - name: set local AFS cell
+      ansible.builtin.copy:
+        content: "{{ openafs.cell }}"
+        dest: /etc/openafs/ThisCell
+
+    - name: update CellServDB to a more recent version
+      ansible.builtin.copy:
+        src: CellServDB
+        dest: /etc/openafs/CellServDB
+
+    - name: add {andrew,cs,ece} cell shortcuts
+      ansible.builtin.copy:
+        content: |
+          andrew.cmu.edu  andrew
+          cs.cmu.edu      cs
+          ece.cmu.edu     ece
+        dest: /etc/openafs/CellAlias
+      when: openafs.cell == "andrew.cmu.edu"
 
   #####################################
   - name: configure Samba
