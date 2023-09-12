@@ -27,18 +27,28 @@ steps:
       - avahi-utils
       - chrony
       - grub-pc
+      - krb5-config
       - krb5-user
       - linux-image-amd64
-      - net-tools
       - parted
       # openafs
       - openafs-client
+      - openafs-modules-dkms
       - openafs-krb5
       # samba
+      - attr
+      - logrotate
       - samba
+      - samba-vfs-modules
       # webauth
       - gunicorn
+      - python3-dotenv
       - python3-flask
+      # convenience/debug tools
+      - ed
+      - lsof
+      - net-tools
+    recommends: false
     tag: rootfs
     unless: rootfs_unpacked
 
