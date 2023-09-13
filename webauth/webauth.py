@@ -160,7 +160,7 @@ def check_krb5_credentials(krb5_username: str, krb5_password: str) -> None:
             )
         except subprocess.CalledProcessError:
             raise ValueError("Username or password incorrect")
-    flash("Successfully authenticated {username}")
+    flash(f"Successfully authenticated {username}")
 
 
 def get_or_create_local_user(username: str, password: str, new_user: bool) -> None:
