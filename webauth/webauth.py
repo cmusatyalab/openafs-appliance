@@ -14,10 +14,6 @@ SMBPASSWD = which("smbpasswd")
 KINIT = which("kinit")
 CLOG = which("clog")
 
-DEFAULT_KRB5_REALM = "ANDREW.CMU.EDU"
-DEFAULT_AFS_CELL = "andrew.cmu.edu"
-DEFAULT_CODA_REALM = "coda.cs.cmu.edu"
-
 USER_BLOCKLIST = ("root",)  # example as root will be blocked because of uid
 REALM_WHITELIST = ()
 REALM_BLOCKLIST = ()
@@ -44,7 +40,7 @@ def validate_username(
         username = request.form[username_field]
         auth = username_field.split("_", 1)[0].capitalize()
     else:
-        auth = "Local"
+        auth = "local"
 
     # Really what we want to make sure is that someone can't try to inject
     # any characters that would allow them to add/modify kinit arguments or
@@ -79,8 +75,8 @@ def validate_username(
     user, realm = match.groups()
 
     # local (samba) username should not have a realm part
-    if auth == "Local" and realm is not None:
-        raise ValueError("Invalid Local username")
+    if auth == "local" and realm is not None:
+        raise ValueError("Invalid username")
 
     # Check that the username is not in the block list
     #
@@ -88,28 +84,29 @@ def validate_username(
     # for already existing local users, but this avoids an unnecessary step
     # where we check password validity with kerberos.
     if username in USER_BLOCKLIST:
-        raise ValueError(f"Invalid {auth} username")
+        raise ValueError(f"{auth} username blocked by administrator")
 
     # Check that the username is not associated with one of the system accounts
     try:
         user = pwd.getpwnam(username)
-        if user.pw_uid < 1000:
-            raise ValueError(f"Invalid {auth} username")
+        if auth == "local" and user.pw_uid < 1000:
+            raise ValueError("Cannot use a reserved username")
     except KeyError:
         pass
 
     if realm is None:
         return username, ""
 
+    # I _think_ the regex should have caught these already
     if "." not in realm:
         raise ValueError(f"Invalid {auth} realm")
 
     if REALM_WHITELIST and realm[1:] not in REALM_WHITELIST:
-        raise ValueError(f"Invalid {auth} realm")
+        raise ValueError(f"{auth} realm not authorized by administrator")
 
     # Check that the realm is not in the block list
     if REALM_BLOCKLIST and realm[1:] in REALM_BLOCKLIST:
-        raise ValueError(f"Invalid {auth} realm")
+        raise ValueError(f"{auth} realm blocked by administrator")
 
     return username, realm
 
@@ -122,7 +119,8 @@ def validate_password(password_field: str) -> str:
     # examples of non-printable characters are carriage return and line feed,
     # and things like the null character (end of string in C) etc.
     if not password.isprintable():
-        raise ValueError(f"Invalid password {password_field}")
+        auth = password_field.split("_", 1)[0].capitalize()
+        raise ValueError(f"Invalid {auth} password")
 
     return password
 
@@ -221,6 +219,8 @@ def do_krb5_login(samba_username: str, krb5_username: str, krb5_password: str) -
     except subprocess.CalledProcessError:
         raise ValueError("Failed to obtain Kerberos credentials")
 
+    flash(f"Obtained Kerberos credentials for {krb5_username}")
+
 
 def do_coda_login(samba_username: str, coda_username: str, coda_password: str) -> None:
     if CLOG is None or not coda_password:
@@ -263,7 +263,7 @@ def index():
     return render_template("index.html")
 
 
-@app.route("/u/<username>", methods=["GET", "POST"])
+@app.route("/<username>", methods=["GET", "POST"])
 def login(username):
     try:
         validate_username(username=username)
