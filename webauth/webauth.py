@@ -1,6 +1,7 @@
 import json
 import pwd
 import re
+import secrets
 import subprocess
 import tempfile
 from pathlib import Path
@@ -20,7 +21,11 @@ REALM_BLOCKLIST = ()
 
 
 app = Flask(__name__)
-app.secret_key = b"random bytes"
+
+SECRET_PATH = Path(".webauth_secret")
+if not SECRET_PATH.exists():
+    SECRET_PATH.write_text(secrets.token_hex())
+app.secret_key = SECRET_PATH.read_text()
 
 
 def validate_username(
@@ -72,7 +77,7 @@ def validate_username(
     if match is None:
         raise ValueError(f"Invalid {auth} username")
 
-    user, realm = match.groups()
+    username, realm = match.groups()
 
     # local (samba) username should not have a realm part
     if auth == "local" and realm is not None:
@@ -311,6 +316,8 @@ def login(username):
                 coda_user = f"{user}{realm.lower()}"
                 coda_pass = validate_password("coda_password")
                 do_coda_login(username, coda_user, coda_pass)
+            else:
+                coda_user = ""
 
             # - save webauth config
             save_settings(username, dict(krb5_user=krb5_user, coda_user=coda_user))
