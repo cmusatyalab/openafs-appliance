@@ -230,3 +230,11 @@
       command:
         cmd: /bin/systemctl enable webauth.service
         creates: /etc/systemd/system/multi-user.target.wants/webauth.service
+
+  #####################################
+  - name: cleanup
+    tags: config
+    block:
+    - name: clean apt package cache
+      command:
+        cmd: /usr/bin/apt-get clean
