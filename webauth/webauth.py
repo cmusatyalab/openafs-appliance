@@ -140,7 +140,8 @@ def load_settings(username: str) -> Dict[str, str]:
 
 
 def save_settings(username: str, config: Dict[str, str]) -> None:
-    config_path = Path.expanduser(f"~{username}/.webauth.conf")
+    user = pwd.getpwnam(username)
+    config_path = Path(user.pw_dir).joinpath(".webauth.conf")
     config_json = json.dumps(config)
     config_path.write_text(config_json)
 
@@ -180,7 +181,8 @@ def get_or_create_local_user(username: str, password: str, new_user: bool) -> No
                 )
             except subprocess.CalledProcessError:
                 raise ValueError("Failed to change local password")
-            flash("Updated SMB password")
+
+            flash(f"Updated Local SMB password for {username}")
         return
     except KeyError:
         pass
@@ -194,8 +196,9 @@ def get_or_create_local_user(username: str, password: str, new_user: bool) -> No
             check=True,
         )
     except subprocess.CalledProcessError:
-        raise RuntimeError("Failed to create local account")
-    flash(f"Created SMB user {username}")
+        raise ValueError("Failed to create local account")
+
+    flash(f"Created Local SMB user {username}")
 
 
 def do_krb5_login(samba_username: str, krb5_username: str, krb5_password: str) -> None:
@@ -220,7 +223,7 @@ def do_krb5_login(samba_username: str, krb5_username: str, krb5_password: str) -
 
 
 def do_coda_login(samba_username: str, coda_username: str, coda_password: str) -> None:
-    if not coda_password:
+    if CLOG is None or not coda_password:
         return
 
     try:
@@ -242,6 +245,8 @@ def do_coda_login(samba_username: str, coda_username: str, coda_password: str) -
     except subprocess.CalledProcessError:
         raise ValueError("Failed to obtain Coda credentials")
 
+    flash(f"Obtained Coda tokens for {coda_username}")
+
 
 @app.route("/", methods=["GET", "POST"])
 def index():
@@ -254,6 +259,7 @@ def index():
             return redirect(url_for("login", username=username))
         except ValueError as exc:
             flash(exc.args[0])
+
     return render_template("index.html")
 
 
@@ -266,7 +272,7 @@ def login(username):
         return redirect(url_for("index"))
 
     config = load_settings(username)
-    config['coda'] = True
+    config['coda'] = CLOG is not None
 
     if request.method == "POST":
         # initial form field validation
