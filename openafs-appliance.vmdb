@@ -32,11 +32,11 @@ steps:
       - linux-image-amd64
       - parted
       # openafs
+      - linux-headers-amd64
       - openafs-client
       - openafs-modules-dkms
       - openafs-krb5
       # samba
-      - attr
       - logrotate
       - samba
       - samba-vfs-modules
