@@ -182,7 +182,7 @@
             comment = AFS Root Directory Share
             path = /afs
             afs share = yes
-            vfs objects = fake_perms
+            vfs objects = fake_perms offline
             browseable = yes
             read only = no
             guest ok = no
@@ -196,7 +196,7 @@
           [coda]
             comment = Coda Root Directory Share
             path = /coda
-            vfs objects = fake_perms
+            vfs objects = fake_perms offline
             browseable = yes
             read only = no
             guest ok = no
