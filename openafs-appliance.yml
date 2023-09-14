@@ -169,6 +169,7 @@
       ansible.builtin.blockinfile:
         path: /etc/samba/smb.conf
         block: |
+          client use kerberos = off
           add user script = /usr/sbin/useradd -s /usr/sbin/nologin -m '%u'
           preexec = /usr/bin/aklog -c {{ openafs.cell }}
           preexec close = no
