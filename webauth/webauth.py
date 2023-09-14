@@ -160,13 +160,13 @@ def check_krb5_credentials(krb5_username: str, krb5_password: str) -> None:
             )
         except subprocess.CalledProcessError:
             raise ValueError("Username or password incorrect")
-    flash(f"Successfully authenticated {username}")
+    flash(f"Successfully authenticated {krb5_username}")
 
 
-def get_or_create_local_user(username: str, password: str, new_user: bool) -> None:
+def get_or_create_local_user(samba_username: str, samba_password: str, new_user: bool) -> None:
     # check if username already exists
     try:
-        pwd.getpwnam(username)
+        pwd.getpwnam(samba_username)
 
         # !!! we have to make sure we're not racing with another user
         # creating the same local account !!!
@@ -174,18 +174,18 @@ def get_or_create_local_user(username: str, password: str, new_user: bool) -> No
             raise ValueError("User already exists, try again")
 
         # user exists, update the password...
-        if password:
+        if samba_password:
             try:
                 subprocess.run(
-                    [SMBPASSWD, username],
-                    input=f"{password}\n{password}\n",
+                    [SMBPASSWD, samba_username],
+                    input=f"{samba_password}\n{samba_password}\n",
                     encoding="utf-8",
                     check=True,
                 )
             except subprocess.CalledProcessError:
                 raise ValueError("Failed to change local password")
 
-            flash(f"Updated Local SMB password for {username}")
+            flash(f"Updated Local SMB password for {samba_username}")
         return
     except KeyError:
         pass
@@ -193,15 +193,15 @@ def get_or_create_local_user(username: str, password: str, new_user: bool) -> No
     # create new user
     try:
         subprocess.run(
-            [SMBPASSWD, "-a", username],
-            input=f"{password}\n{password}\n",
+            [SMBPASSWD, "-a", samba_username],
+            input=f"{samba_password}\n{samba_password}\n",
             encoding="utf-8",
             check=True,
         )
     except subprocess.CalledProcessError:
         raise ValueError("Failed to create local account")
 
-    flash(f"Created Local SMB user {username}")
+    flash(f"Created Local SMB user {samba_username}")
 
 
 def do_krb5_login(samba_username: str, krb5_username: str, krb5_password: str) -> None:
