@@ -1,9 +1,22 @@
 {% extends "base.html" %}
 {% block formfields %}
 <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
+  <input class="mdl-textfield__input" type="text" name="samba_username" id="samba_username"
+         disabled value="{{ username }}">
+  <label class="mdl-textfield__label" for="samba_username">Local SMB/CIFS Username</label>
+</div>
+<div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
+  <input class="mdl-textfield__input" type="password" name="samba_password" id="samba_password"
+  {#- if "new_user" in config %} required{% endif #} tabindex=3>
+  <label class="mdl-textfield__label" for="samba_password">Local SMB/CIFS Password</label>
+  <div class="mdl-tooltip" for="samba_password">
+    Optionally set a password to use for local SMB/CIFS authentication to the appliance.
+  </div>
+</div>
+<div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
   <input class="mdl-textfield__input" type="text" name="krb5_username" id="krb5_username"
-{%- if "new_user" in config %} required{% else %} disabled{% endif %} value="
-{%- if config.krb5_user %}{{ config.krb5_user }}{% else %}{{ username }}{% endif %}" tabindex=-1>
+  {%- if "new_user" in config %} required{% else %} disabled{% endif %} value="
+  {%- if config.krb5_user %}{{ config.krb5_user }}{% else %}{{ username }}{% endif %}" tabindex=-1>
   <label class="mdl-textfield__label" for="krb5_username">Kerberos Username</label>
 </div>
 <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
@@ -11,27 +24,14 @@
   <label class="mdl-textfield__label" for="krb5_password">Kerberos Password</label>
 </div>
 {%- if "coda" in config %}
-  <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
-    <input class="mdl-textfield__input" type="text" name="coda_username" id="coda_username"
-{%- if config.coda_user %} value="{{ config.coda_user }}"{% endif %} tabindex=-1>
-    <label class="mdl-textfield__label" for="coda_username">Coda Username</label>
-  </div>
-  <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
-    <input class="mdl-textfield__input" type="password" name="coda_password" id="coda_password" tabindex=2>
-    <label class="mdl-textfield__label" for="coda_password">Coda Password</label>
-  </div>
-{% endif -%}
 <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
-  <input class="mdl-textfield__input" type="text" name="samba_username" id="samba_username"
-         disabled value="{{ username }}">
-  <label class="mdl-textfield__label" for="samba_username">Local SMB/CIFS Username</label>
+  <input class="mdl-textfield__input" type="text" name="coda_username" id="coda_username"
+  {%- if config.coda_user %} value="{{ config.coda_user }}"{% endif %} tabindex=-1>
+  <label class="mdl-textfield__label" for="coda_username">Coda Username</label>
 </div>
 <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
-  <input class="mdl-textfield__input" type="password" name="samba_password" id="samba_password"
-{#- if "new_user" in config %} required{% endif #} tabindex=3>
-  <label class="mdl-textfield__label" for="samba_password">Local SMB/CIFS Password</label>
-  <div class="mdl-tooltip" for="samba_password">
-    Optionally set or change the password to use for local SMB/CIFS authentication to the appliance.
-  </div>
+  <input class="mdl-textfield__input" type="password" name="coda_password" id="coda_password" tabindex=2>
+  <label class="mdl-textfield__label" for="coda_password">Coda Password</label>
 </div>
+{%- endif %}
 {% endblock %}

@@ -43,8 +43,8 @@
     </main>
   </div>
 </body>
-{% with messages = get_flashed_messages() %}
-{% if messages %}
+{%- with messages = get_flashed_messages() %}
+{%- if messages %}
 <script>
 window.onload = () => {
   var messages = [
@@ -58,7 +58,7 @@ window.onload = () => {
   }
 }
 </script>
-{% endif %}
-{% endwith %}
+{%- endif %}
+{%- endwith %}
 </html>
 
