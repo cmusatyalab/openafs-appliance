@@ -21,6 +21,8 @@ REALM_BLOCKLIST = ()
 
 
 app = Flask(__name__)
+app.config.from_mapping(CODA_ENABLED=CLOG is not None)
+app.config.from_prefixed_env(prefix="WEBAUTH_")
 
 SECRET_PATH = Path(".webauth_secret")
 if not SECRET_PATH.exists():
@@ -54,7 +56,8 @@ def validate_username(
     #
     # rules for domain names (realms) really are far more complicated possibly
     # having to pass it through an IDN library to handle unicode and all that.
-    username_realm_regex = re.compile(r"""
+    username_realm_regex = re.compile(
+        r"""
        ^([a-z][a-z0-9-_]*)    # the username
         (@                    # the optional @realm
           (?:                   # one or more domain parts
@@ -72,7 +75,9 @@ def validate_username(
             \.?                 # fqdn names may end with a period
           )
         )?$
-    """, re.VERBOSE | re.ASCII)
+    """,
+        re.VERBOSE | re.ASCII,
+    )
     match = username_realm_regex.match(username)
     if match is None:
         raise ValueError(f"Invalid {auth} username")
@@ -163,7 +168,9 @@ def check_krb5_credentials(krb5_username: str, krb5_password: str) -> None:
     flash(f"Successfully authenticated {krb5_username}")
 
 
-def get_or_create_local_user(samba_username: str, samba_password: str, new_user: bool) -> None:
+def get_or_create_local_user(
+    samba_username: str, samba_password: str, new_user: bool
+) -> None:
     # check if username already exists
     try:
         pwd.getpwnam(samba_username)
@@ -228,7 +235,7 @@ def do_krb5_login(samba_username: str, krb5_username: str, krb5_password: str) -
 
 
 def do_coda_login(samba_username: str, coda_username: str, coda_password: str) -> None:
-    if CLOG is None or not coda_password:
+    if not app.config["CODA_ENABLED"] or not coda_password:
         return
 
     try:
@@ -277,7 +284,7 @@ def login(username):
         return redirect(url_for("index"))
 
     config = load_settings(username)
-    config['coda'] = CLOG is not None
+    config["coda"] = app.config["CODA_ENABLED"]
 
     if request.method == "POST":
         # initial form field validation

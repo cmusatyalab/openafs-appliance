@@ -223,6 +223,7 @@
           WorkingDirectory=/app
           ExecStart=/usr/bin/gunicorn -b 0.0.0.0:80 -w 4 webauth:app
           Restart=always
+          Environment="WEBAUTH_CODA_ENABLED={{ coda.enabled | bool }}"
           [Install]
           WantedBy=multi-user.target
         dest: /etc/systemd/system/webauth.service
