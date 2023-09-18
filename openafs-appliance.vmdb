@@ -42,7 +42,6 @@ steps:
       - samba-vfs-modules
       # webauth
       - gunicorn
-      - python3-dotenv
       - python3-flask
       # convenience/debug tools
       - ed
