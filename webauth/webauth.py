@@ -1,3 +1,15 @@
+#
+# SPDX-FileCopyrightText: 2023 Carnegie Mellon University
+# SPDX-License-Identifier: GPL-2.0-only
+#
+# Authentication helper for OpenAFS appliance
+#
+# Provides a web-based workflow for creating new local Samba accounts with
+# authentication against a Kerberos realm with the goal to let a Samba daemon
+# process obtain AFS and Coda authentication tokens for read/write user access
+# to afs and coda shares.
+#
+
 import json
 import pwd
 import re

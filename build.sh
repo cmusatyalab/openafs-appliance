@@ -1,5 +1,8 @@
 #!/bin/sh
-
+#
+# SPDX-FileCopyrightText: 2023 Carnegie Mellon University
+# SPDX-License-Identifier: GPL-2.0-only
+#
 set -ex
 
 #VMDB2=$(which vmdb2)

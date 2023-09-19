@@ -1,7 +1,9 @@
 #
 # Ansible playbook to configure an OpenAFS appliance.
 #
-
+# SPDX-FileCopyrightText: 2023 Carnegie Mellon University
+# SPDX-License-Identifier: GPL-2.0-only
+#
 - hosts: image
   vars:
     debug_image: false  # set this to true to allow passwordless root login

@@ -1,0 +1,13 @@
+Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
+
+Files: poetry.lock
+Copyright: 2023 Carnegie Mellon University
+License: 0BSD
+
+Files: README.md
+Copyright: 2023 Carnegie Mellon University
+License: GPL-2.0-only
+
+Files: fake_perms_fix_symlinks.patch
+Copyright: 2023 Carnegie Mellon University
+License: GPL-2.0-or-later

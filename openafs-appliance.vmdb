@@ -1,3 +1,9 @@
+#
+# Configuration file to build an OpenAFS appliance image with vmdb2
+#
+# SPDX-FileCopyrightText: 2023 Carnegie Mellon University
+# SPDX-License-Identifier: GPL-2.0-only
+#
 steps:
   - mkimg: "{{ output }}"
     size: 4G
