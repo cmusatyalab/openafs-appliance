@@ -10,7 +10,6 @@ from typing import Dict, Tuple
 
 from flask import Flask, flash, redirect, render_template, request, url_for
 
-
 SMBPASSWD = which("smbpasswd")
 KINIT = which("kinit")
 CLOG = which("clog")
@@ -30,9 +29,14 @@ if not SECRET_PATH.exists():
 app.secret_key = SECRET_PATH.read_text()
 
 
-def validate_username(
-    username_field: str = None, username: str = None
-) -> Tuple[str, str]:
+def validate_username_field(username_field: str) -> Tuple[str, str]:
+    """Wrapper around validate_username to check username fields in submitted forms."""
+    username = request.form[username_field]
+    auth = username_field.split("_", 1)[0].capitalize()
+    return validate_username(username, auth)
+
+
+def validate_username(username: str, auth: str = "local") -> Tuple[str, str]:
     """Check if the username is correctly formatted, not on a blocked username list
     and not associated with a local system account.
 
@@ -43,12 +47,6 @@ def validate_username(
     Raises:
     - ValueError for incorrectly formatted or blocked user or realm names.
     """
-    if username_field is not None:
-        username = request.form[username_field]
-        auth = username_field.split("_", 1)[0].capitalize()
-    else:
-        auth = "local"
-
     # Really what we want to make sure is that someone can't try to inject
     # any characters that would allow them to add/modify kinit arguments or
     # authenticate against a some other realm which could block the user with
@@ -155,6 +153,7 @@ def save_settings(username: str, config: Dict[str, str]) -> None:
 
 
 def check_krb5_credentials(krb5_username: str, krb5_password: str) -> None:
+    assert KINIT is not None
     with tempfile.NamedTemporaryFile() as cctemp:
         try:
             subprocess.run(
@@ -171,6 +170,7 @@ def check_krb5_credentials(krb5_username: str, krb5_password: str) -> None:
 def get_or_create_local_user(
     samba_username: str, samba_password: str, new_user: bool
 ) -> None:
+    assert SMBPASSWD is not None
     # check if username already exists
     try:
         pwd.getpwnam(samba_username)
@@ -212,6 +212,7 @@ def get_or_create_local_user(
 
 
 def do_krb5_login(samba_username: str, krb5_username: str, krb5_password: str) -> None:
+    assert KINIT is not None
     try:
         subprocess.run(
             [
@@ -238,10 +239,11 @@ def do_coda_login(samba_username: str, coda_username: str, coda_password: str) -
     if not app.config["CODA_ENABLED"] or not coda_password:
         return
 
+    assert CLOG is not None
     try:
         subprocess.run(
             [
-                "su",
+                "/bin/su",
                 "-s",
                 "/bin/sh",
                 "-c",
@@ -264,10 +266,10 @@ def do_coda_login(samba_username: str, coda_username: str, coda_password: str) -
 def index():
     if request.method == "POST":
         try:
-            # local username shouldn't contain a realm
-            # make sure we call validate(username=...)
+            # local username shouldn't contain a realm, make sure we call
+            # validate_username(...) and not validate_username_field(...)
             username = request.form["username"]
-            validate_username(username=username)
+            validate_username(username)
             return redirect(url_for("login", username=username))
         except ValueError as exc:
             flash(exc.args[0])
@@ -278,7 +280,7 @@ def index():
 @app.route("/<username>", methods=["GET", "POST"])
 def login(username):
     try:
-        validate_username(username=username)
+        validate_username(username)
     except ValueError as exc:
         flash(exc.args[0])
         return redirect(url_for("index"))
@@ -293,7 +295,7 @@ def login(username):
             if new_user:
                 # because we use the kerberos credentials to identify the user,
                 # these should not change after the local account is created.
-                user, realm = validate_username("krb5_username")
+                user, realm = validate_username_field("krb5_username")
                 krb5_user = f"{user}{realm.upper()}"
             else:
                 krb5_user = config["krb5_user"]
@@ -319,7 +321,7 @@ def login(username):
 
             # - obtain Coda tokens for the local user
             if "coda_username" in request.form:
-                user, realm = validate_username("coda_username")
+                user, realm = validate_username_field("coda_username")
                 coda_user = f"{user}{realm.lower()}"
                 coda_pass = validate_password("coda_password")
                 do_coda_login(username, coda_user, coda_pass)
