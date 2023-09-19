@@ -177,23 +177,35 @@
           preexec close = no
         insertbefore: '^#=+ Share Definitions =+$'
 
+    - name: configure Samba | Don't expose home directories
+      ansible.builtin.lineinfile:
+        path: /etc/samba/smb.conf
+        insertafter: '^\[homes\]$'
+        line: '   available = no'
+
+    - name: configure Samba | Make default shares not browseable
+      ansible.builtin.replace:
+        path: /etc/samba/smb.conf
+        regexp: '^([ \t]*)browseable = yes$'
+        replace: '\1browseable = no'
+
     - name: configure Samba | add AFS share
       ansible.builtin.blockinfile:
         marker: "# {mark} OPENAFS SHARE"
         block: |
           [afs]
-            comment = AFS Root Directory Share
-            path = /afs
-            afs share = yes
-            vfs objects = fake_perms offline
-            store dos attributes = no
-            map archive = no
-            map hidden = no
-            map readonly = permissions
-            map system = no
-            browseable = yes
-            read only = no
-            guest ok = yes
+             comment = AFS Root Directory Share
+             path = /afs
+             afs share = yes
+             vfs objects = fake_perms offline
+             store dos attributes = no
+             map archive = no
+             map hidden = no
+             map readonly = permissions
+             map system = no
+             browseable = yes
+             read only = no
+             guest ok = yes
         path: /etc/samba/smb.conf
 
     - name: configure Samba | add Coda share
@@ -202,17 +214,17 @@
         marker: "# {mark} CODA SHARE"
         block: |
           [coda]
-            comment = Coda Root Directory Share
-            path = /coda
-            vfs objects = fake_perms offline
-            store dos attributes = no
-            map archive = no
-            map hidden = no
-            map readonly = permissions
-            map system = no
-            browseable = yes
-            read only = no
-            guest ok = yes
+             comment = Coda Root Directory Share
+             path = /coda
+             vfs objects = fake_perms offline
+             store dos attributes = no
+             map archive = no
+             map hidden = no
+             map readonly = permissions
+             map system = no
+             browseable = yes
+             read only = no
+             guest ok = yes
         path: /etc/samba/smb.conf
 
   #####################################
