@@ -1,5 +1,5 @@
 #
-# Ansible playbook to configure an openafs appliance.
+# Ansible playbook to configure an OpenAFS appliance.
 #
 
 - hosts: image
@@ -11,7 +11,7 @@
     openafs:
       cell: andrew.cmu.edu
     samba:
-      workgroup: "OPENAFS"      # maybe set to CLOUDLET?
+      workgroup: "CLOUDLET"
     samba_rebuild:
       root: "http://coda.cs.cmu.edu/~jaharkes/samba-rebuild"
     coda:

@@ -70,6 +70,8 @@ steps:
       coda:
         enabled: true
         realm: coda.cs.cmu.edu
+      samba_rebuild:
+        root: "http://coda.cs.cmu.edu/~jaharkes/samba-rebuild"
 
   - resize-rootfs: rootfs
   - grub: bios

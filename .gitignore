@@ -1,12 +1,14 @@
-/openafs-appliance.crt
-/openafs-appliance.img
-/openafs-appliance.key
 /openafs-appliance.log
-/openafs-appliance.qcow2
 /openafs-appliance.tgz
+/openafs-appliance.img
+/openafs-appliance.qcow2
 /openafs-appliance.vmdk
+
+/openafs-appliance.crt
+/openafs-appliance.key
 
 /CellServDB
 
+/dist/
 /samba/
 /vmdb2/

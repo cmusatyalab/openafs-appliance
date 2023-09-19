@@ -14,3 +14,4 @@ sudo "$VMDB2" -v \
     openafs-appliance.vmdb
 
 qemu-img convert -cp -O qcow2 openafs-appliance.img openafs-appliance.qcow2
+qemu-img convert -p -O vmdk openafs-appliance.img openafs-appliance.vmdk
