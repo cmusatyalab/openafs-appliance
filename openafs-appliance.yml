@@ -13,7 +13,7 @@
     openafs:
       cell: andrew.cmu.edu
     samba:
-      workgroup: "CLOUDLET"
+      workgroup: "OPENAFS"
     samba_rebuild:
       root: "http://coda.cs.cmu.edu/~jaharkes/samba-rebuild"
     coda:
