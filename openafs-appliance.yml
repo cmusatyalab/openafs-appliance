@@ -68,7 +68,7 @@
     tags: config
     block:
     - name: add CS.CMU.EDU realm mapping to krb5.config
-      ansible.builtin.lineinfile: 
+      ansible.builtin.lineinfile:
         path: /etc/krb5.conf
         regexp: '^\s*\.cs\.cmu\.edu = CS\.CMU\.EDU$'
         line: "        .cs.cmu.edu = CS.CMU.EDU"

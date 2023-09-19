@@ -1,0 +1,43 @@
+# SPDX-FileCopyrightText: 2023 Carnegie Mellon University
+# SPDX-License-Identifier: 0BSD
+
+[tool.poetry]
+name = "webauth"
+version = "0.1.0"
+description = "Authentication helper for OpenAFS appliance"
+authors = [
+    "Carnegie Mellon University <satya+group@cs.cmu.edu>",
+    "Jan Harkes <jaharkes@cs.cmu.edu>",
+]
+license = "GPL-2.0-only"
+packages = [
+    { include = "webauth" },
+]
+
+[tool.poetry.dependencies]
+python = "^3.8"
+Flask = "^2.2.2"
+gunicorn = "^20.1.0"
+
+[tool.poetry.group.dev.dependencies]
+poethepoet = "^0.22.1"
+pre-commit = "^3.4.0"
+
+[tool.black]
+target-version = ["py38"]
+
+[tool.isort]
+py_version = 38
+profile = "black"
+
+[tool.mypy]
+check_untyped_defs = true
+files = ["webauth"]
+
+[tool.poe.tasks.precommit]
+help = "Run precommit tasks"
+cmd = "pre-commit run -a"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
