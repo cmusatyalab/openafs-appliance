@@ -47,6 +47,7 @@ steps:
       - samba
       - samba-vfs-modules
       # webauth
+      - caddy
       - gunicorn
       - python3-flask
       # convenience/debug tools

@@ -36,6 +36,7 @@
       # samba
       - samba
       # webauth
+      - caddy
       - gunicorn
       - python3-flask
 
@@ -245,7 +246,7 @@
           [Service]
           User=root
           WorkingDirectory=/app
-          ExecStart=/usr/bin/gunicorn -b 0.0.0.0:80 -w 4 webauth:app
+          ExecStart=/usr/bin/gunicorn -w 4 webauth:app
           Restart=always
           Environment="WEBAUTH_CODA_ENABLED={{ coda.enabled | bool }}"
           [Install]
@@ -256,6 +257,14 @@
       command:
         cmd: /bin/systemctl enable webauth.service
         creates: /etc/systemd/system/multi-user.target.wants/webauth.service
+
+    - name: configure Caddy frontend for https offload
+      ansible.builtin.copy:
+        content: |
+          {{ hostname }}.local {
+                  reverse_proxy localhost:8000
+          }
+        dest: /etc/caddy/Caddyfile
 
   #####################################
   - name: cleanup
