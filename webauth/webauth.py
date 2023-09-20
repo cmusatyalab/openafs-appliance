@@ -289,7 +289,7 @@ def index():
     return render_template("index.html")
 
 
-@app.route("/<username>", methods=["GET", "POST"])
+@app.route("/<username>/login", methods=["GET", "POST"])
 def login(username):
     try:
         validate_username(username)
@@ -311,8 +311,8 @@ def login(username):
                 krb5_user = f"{user}{realm.upper()}"
             else:
                 krb5_user = config["krb5_user"]
-            krb5_pass = validate_password("krb5_password")
 
+            krb5_pass = validate_password("krb5_password")
             samba_pass = validate_password("samba_password")
 
             # there is a lot going on here...
@@ -343,8 +343,22 @@ def login(username):
             # - save webauth config
             save_settings(username, dict(krb5_user=krb5_user, coda_user=coda_user))
 
-            return redirect(url_for("login", username=username))
+            return redirect(url_for("success", username=username))
         except ValueError as exc:
             flash(exc.args[0])
 
     return render_template("login.html", username=username, config=config)
+
+
+@app.route("/<username>/authenticated", methods=["GET"])
+def success(username):
+    try:
+        validate_username(username)
+    except ValueError as exc:
+        flash(exc.args[0])
+        return redirect(url_for("index"))
+
+    config = load_settings(username)
+    config["coda"] = app.config["CODA_ENABLED"]
+
+    return render_template("success.html", username=username, config=config)

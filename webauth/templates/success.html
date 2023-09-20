@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{#- SPDX-FileCopyrightText: 2023 Carnegie Mellon University #}
+{#- SPDX-License-Identifier: GPL-2.0-only #}
+{% block main %}
+<div class="mdl-card mdl-shadow--3dp" style="width: 80%">
+  <div class="mdl-card__title">
+    <h2 class="mdl-card__title-text">You have successfully authenticated</h2>
+  </div>
+  <div class="mdl-card__supporting-text mdl-card--border">
+<p>You have successfully authenticated and obtained Kerberos credentials for the
+local SMB/CIFS user <em>{{ username }}</em>.</p>
+<p>When you (re)connect to the SMB/CIFS share at <b>\\openafs.local\afs</b> it
+will refresh your AFS authentication token.</p>
+<p>If you did not set a password for the local SMB/CIFS user it will have been
+set to match your Kerberos password. You can change the SMB/CIFS user password
+and/or refresh your Kerberos credentials by going back to the
+<a href="{{ url_for('login', username=username) }}">login page</a>.</p>
+
+    <div class="mdl-tabs mdl-js-tabs mdl-js-ripple-effect">
+      <div class="mdl-tabs__tab-bar">
+        <span class="mdl-tabs__tab">Setup instructions</span>
+        <a href="#setup_windows" class="mdl-tabs__tab is-active">Windows</a>
+        <a href="#setup_linux" class="mdl-tabs__tab">Linux</a>
+      </div>
+      <div class="mdl-tabs__panel is-active" id="setup_windows">
+<p>Open the file explorer and in the right-click context menu on "My Computer"
+select "map network drive".  For the share enter "\\openafs.local\afs", and use
+"{{ username }}" for the user and the password you specified for the Local
+SMB/CIFS user on the
+<a href="{{ url_for('login', username=username) }}">login page</a>.</p>
+      </div>
+      <div class="mdl-tabs__panel" id="setup_linux">
+<h5>Access the share through the file browser.</h5>
+<p>For a GNOME desktop with the Nautilus browser, open the 'Files' application.
+Then select '+ Other Locations' and it should show `OPENAFS` under the
+"Networks" heading. Select this and then navigate to 'afs'. You are asked to
+authenticate and use "{{ username }}" and the password you specified for the
+Local SMB/CIFS user on the
+<a href="{{ url_for('login', username=username) }}">login page</a>.
+You can then browse and copy files to/from the AFS share.</p>
+<p>The advantage is that you do not need root access, however many applications
+will be unable to directly access the share so you need to copy to/from a local
+directory with the Files application.  </p>
+
+<h5>Access the share through the UNIX file system namespace</h5>
+<p>Become the root user with sudo or su and add the following line to `/etc/fstab`.</p>
+<pre>
+//openafs.local/afs  /afs  cifs  rw,noauto,nosetuids,noperm,username={{ username }},password=...  0  0
+</pre>
+<p>The advantage is that all applications will be able to directly access the
+files. But on a multi-user system this means other users will be able to access
+your files using your credentials.</p>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
