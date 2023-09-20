@@ -262,7 +262,14 @@
       ansible.builtin.copy:
         content: |
           {{ hostname }}.local {
-                  reverse_proxy localhost:8000
+                  encode gzip
+                  handle /static/* {
+                          root * /app
+                          file_server
+                  }
+                  handle {
+                          reverse_proxy localhost:8000
+                  }
           }
         dest: /etc/caddy/Caddyfile
 

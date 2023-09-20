@@ -11,3 +11,7 @@ License: GPL-2.0-only
 Files: fake_perms_fix_symlinks.patch
 Copyright: 2023 Carnegie Mellon University
 License: GPL-2.0-or-later
+
+Files: webauth/static/*
+Copyright: 2015 Google, Inc.
+License: Apache-2.0
