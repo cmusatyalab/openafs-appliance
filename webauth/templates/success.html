@@ -45,11 +45,12 @@ directory with the Files application.  </p>
 <h5>Access the share through the UNIX file system namespace</h5>
 <p>Become the root user with sudo or su and add the following line to `/etc/fstab`.</p>
 <pre>
-//openafs.local/afs  /afs  cifs  rw,noauto,nosetuids,noperm,username={{ username }},password=...  0  0
+//openafs.local/afs  /afs  cifs  rw,noauto,nosetuids,noperm,user={{ username }},pass=&lt;yourpassword&gt;  0  0
 </pre>
-<p>The advantage is that all applications will be able to directly access the
-files. But on a multi-user system this means other users will be able to access
-your files using your credentials.</p>
+<p>Then you can mount the share at <em>/afs</em> with <code>sudo mount /afs</code>.</p>
+<p>The advantage of this approach is that all applications will be able to
+directly access the files. The disadvantage is that on a multi-user system
+other users will be able to access your files with your credentials.</p>
       </div>
     </div>
   </div>
