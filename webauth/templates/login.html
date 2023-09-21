@@ -25,7 +25,7 @@
   <input class="mdl-textfield__input" type="password" name="krb5_password" id="krb5_password" required tabindex=1>
   <label class="mdl-textfield__label" for="krb5_password">Kerberos Password</label>
 </div>
-{%- if "coda" in config %}
+{%- if config.coda_enabled %}
 <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
   <input class="mdl-textfield__input" type="text" name="coda_username" id="coda_username"
   {%- if config.coda_user %} value="{{ config.coda_user }}"{% endif %} tabindex=-1>

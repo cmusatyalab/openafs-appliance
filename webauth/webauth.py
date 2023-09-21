@@ -33,7 +33,6 @@ REALM_BLOCKLIST = ()
 
 app = Flask(__name__)
 app.config.from_mapping(CODA_ENABLED=CLOG is not None)
-app.config.from_prefixed_env(prefix="WEBAUTH_")
 
 SECRET_PATH = Path(".webauth_secret")
 if not SECRET_PATH.exists():
@@ -154,6 +153,8 @@ def load_settings(username: str) -> Dict[str, str]:
         config = json.loads(home.joinpath(".webauth.conf").read_text())
     except (KeyError, FileNotFoundError, ValueError):
         config = dict(new_user=True, krb5_user=username, coda_user=username)
+
+    config["coda_enabled"] = app.config["CODA_ENABLED"]
     return config
 
 
@@ -289,16 +290,14 @@ def index():
     return render_template("index.html")
 
 
-@app.route("/<username>/login", methods=["GET", "POST"])
+@app.route("/l/<username>", methods=["GET", "POST"])
 def login(username):
     try:
         validate_username(username)
+        config = load_settings(username)
     except ValueError as exc:
         flash(exc.args[0])
         return redirect(url_for("index"))
-
-    config = load_settings(username)
-    config["coda"] = app.config["CODA_ENABLED"]
 
     if request.method == "POST":
         # initial form field validation
@@ -350,15 +349,13 @@ def login(username):
     return render_template("login.html", username=username, config=config)
 
 
-@app.route("/<username>/authenticated", methods=["GET"])
+@app.route("/a/<username>", methods=["GET"])
 def success(username):
     try:
         validate_username(username)
+        config = load_settings(username)
     except ValueError as exc:
         flash(exc.args[0])
         return redirect(url_for("index"))
-
-    config = load_settings(username)
-    config["coda"] = app.config["CODA_ENABLED"]
 
     return render_template("success.html", username=username, config=config)

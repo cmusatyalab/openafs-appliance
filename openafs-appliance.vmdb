@@ -75,7 +75,7 @@ steps:
       openafs:
         cell: andrew.cmu.edu
       coda:
-        enabled: true
+        enabled: false
         realm: coda.cs.cmu.edu
       samba_rebuild:
         root: "http://coda.cs.cmu.edu/~jaharkes/samba-rebuild"
